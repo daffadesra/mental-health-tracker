@@ -18,10 +18,10 @@ from django.urls import reverse
 
 @login_required(login_url='/login')
 def show_main(request):
-    mood_entries = MoodEntry.objects.all()
+    mood_entries = MoodEntry.objects.filter(user=request.user)
     context = {
-        'npm' : '2306165490',
-        'name': 'Daffa Desra Hastiar',
+        'name' : request.user.username,
+        'npm': '2306165490',
         'class': 'PBP C',
         'mood_entries': mood_entries,
         'last_login': request.COOKIES['last_login'],
@@ -34,7 +34,9 @@ def create_mood_entry(request):
     form = MoodEntryForm(request.POST or None)
 
     if form.is_valid() and request.method == "POST":
-        form.save()
+        mood_entry = form.save(commit=False)
+        mood_entry.user = request.user
+        mood_entry.save()
         return redirect('main:show_main')
 
     context = {'form': form}
